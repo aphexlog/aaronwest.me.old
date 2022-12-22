@@ -1,0 +1,10 @@
+{
+  "hosted-zone:account=024408416939:domainName=aaronwest.me:region=us-west-2": {
+    "Id": "/hostedzone/Z04746942HEHPY2OIRRR2",
+    "Name": "aaronwest.me."
+  },
+  "hosted-zone:account=024408416939:domainName=aaronwest.me:region=us-east-1": {
+    "Id": "/hostedzone/Z04746942HEHPY2OIRRR2",
+    "Name": "aaronwest.me."
+  }
+}

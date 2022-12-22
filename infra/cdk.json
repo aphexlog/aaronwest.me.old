@@ -19,7 +19,7 @@
   "context": {
     "env": {
       "account": "024408416939",
-      "region": "us-west-2"
+      "region": "us-east-1"
     }
   }
 }

@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { AaronwestMeStack } from './lib/aaronwest.me-stack';
+import { AaronwestMeStack } from './lib/s3bucket';
 
 const app = new cdk.App();
 
-// get env from context
 const env = app.node.tryGetContext('env');
 
 new AaronwestMeStack(app, 'AaronwestMeStack', {
