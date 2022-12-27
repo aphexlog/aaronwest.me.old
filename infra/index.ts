@@ -8,5 +8,6 @@ const app = new cdk.App();
 const env = app.node.tryGetContext('env');
 
 new AaronwestMeStack(app, 'AaronwestMeStack', {
-  env
+  env,
+  domainName: 'aaronwest.me',
 });

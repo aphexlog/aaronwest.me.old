@@ -10,8 +10,7 @@ import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 
 interface Props extends cdk.StackProps{
-  // websiteIndexDocument: string;
-  // websiteErrorDocument: string;
+  domainName: string;
 }
 
 export class AaronwestMeStack extends cdk.Stack {
@@ -19,22 +18,20 @@ export class AaronwestMeStack extends cdk.Stack {
     super(scope, id, props);
 
     const bucket = new s3.Bucket(this, 'AaronwestMeBucket', {
-      publicReadAccess: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       websiteIndexDocument: 'index.html',
       websiteErrorDocument: 'index.html',
       versioned: true,
-      enforceSSL: true,
       encryption: s3.BucketEncryption.S3_MANAGED,
     });
 
     const zone = r53.HostedZone.fromLookup(this, 'Zone', {
-      domainName: 'aaronwest.me',
+      domainName: props.domainName,
     });
 
     const certificate = new acm.DnsValidatedCertificate(this, 'Certificate', {
-      domainName: 'aaronwest.me',
+      domainName: props.domainName,
       hostedZone: zone,
       region: 'us-east-1',
     });
@@ -46,31 +43,32 @@ export class AaronwestMeStack extends cdk.Stack {
 
     const distribution = new cloudfront.Distribution(this, 'MyDistribution', {
       defaultBehavior: {
-        origin: new origins.S3Origin(bucket), 
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+        origin: new origins.S3Origin(bucket),
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS
       },
       enabled: true,
-      domainNames: ['aaronwest.me'],
+      domainNames: [props.domainName],
       certificate: certificate,
       enableLogging: true,
       logFilePrefix: 'aaronwest.me/distribution-logs',
+      defaultRootObject: 'index.html',
     });
 
     bucket.addToResourcePolicy(new iam.PolicyStatement({
       actions: ['s3:GetObject'],
       resources: [bucket.arnForObjects('*')],
       principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
-      // conditions: {
-      //   StringEquals: {
-      //     'aws:Referer': certificate.certificateArn,
-      //   },
-      // },
+      conditions: {
+        StringEquals: {
+          'aws:Referer': certificate.certificateArn,
+        },
+      },
     }));
 
     const record = new r53.ARecord(this, 'AliasRecord', {
       zone,
-      recordName: 'aaronwest.me',
+      recordName: props.domainName,
       target: r53.RecordTarget.fromAlias(new r53Targets.CloudFrontTarget(distribution)),
       deleteExisting: true,
       ttl: cdk.Duration.seconds(60),
@@ -83,6 +81,8 @@ export class AaronwestMeStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'DomainName', {
       value: record.domainName,
     });
-
+    new cdk.CfnOutput(this, 'BucketUrl', {
+      value: bucket.bucketWebsiteUrl,
+    });
   }
 }
