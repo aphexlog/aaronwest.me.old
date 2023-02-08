@@ -9,5 +9,6 @@ const env = app.node.tryGetContext('env');
 
 new AaronwestMeStack(app, 'AaronwestMeStack', {
   env,
-  domainName: 'aaronwest.me',
+  zoneName: 'aaronwest.me',
+  outPath: '../out',
 });
